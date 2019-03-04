@@ -10,6 +10,9 @@ pytest-runner = "==4.4"
 cryptoconditions = "==0.8.0"
 bigchaindb-driver = "==0.6.2"
 flake8 = "==3.7.7"
+jupyter = "*"
+ipykernel = "*"
+python-dotenv = "==0.10.1"
 
 [requires]
-python_version = "3.5"
+python_version = "3.7.2"
