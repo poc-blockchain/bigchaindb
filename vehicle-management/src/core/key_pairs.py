@@ -1,11 +1,9 @@
 import os
-from collections import namedtuple
 
-from dotenv import load_dotenv
+from collections import namedtuple
 
 
 AppKeyPair = namedtuple('AppKeyPair', ('private_key', 'public_key'))
-load_dotenv('./.env')
 
 
 def get_appKeyPair():

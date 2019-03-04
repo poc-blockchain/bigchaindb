@@ -1,13 +1,33 @@
-from bigchaindb_driver import BigchainDB
+from core import bigchaindb
+from core.key_pairs import get_appKeyPair
+from config import settings
+
+signer = get_appKeyPair()
+app_ns = '%s.%s' % (settings.APP_NAME, 'app')
+
+assert signer, 'Application admin key pair must be existed.'
 
 
-def create_app(namespace, keypair, ):
-    """Create application as an asset
-        Args:
-            namespace (str) added to asset.data which we use to
-                make it easy to search assets of a particular type in BigchainDB.
-            keypair (CryptoKeypair): The key pair to create and commit a transaction.
+def get_or_create(admin_group_id):
+    """Get or create application as an asset.
     """
-    pass
+
+    metadata = {
+        'canLink': [admin_group_id]
+    }
+
+    asset = {
+        'data': {
+            'ns': app_ns,
+            'name': 'Vehicle management application',
+            'message': 'A vehicle management RBAC application.'
+        }
+    }
+
+    return bigchaindb.get_or_create_asset(signer, app_ns, asset, metadata)
 
 
+def get():
+    """Get application asset already created.
+    """
+    return bigchaindb.search_asset(signer, asset_ns)
