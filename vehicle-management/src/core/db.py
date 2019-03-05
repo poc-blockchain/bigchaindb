@@ -77,3 +77,9 @@ class BigchainDBCore(BigchainDB):
                     break
 
         return transaction_id
+
+    def get(self, asset_id=None):
+        """
+        Get asset by id
+        """
+        return self.transactions.get(asset_id=asset_id)
