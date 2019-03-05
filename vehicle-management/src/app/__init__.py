@@ -3,7 +3,7 @@ from core.key_pairs import get_appKeyPair
 from config import settings
 
 signer = get_appKeyPair()
-app_ns = '%s.%s' % (settings.APP_NAME, 'app')
+namespace = '%s.%s' % (settings.APP_NAME, 'app')
 
 assert signer, 'Application admin key pair must be existed.'
 
@@ -18,13 +18,12 @@ def get_or_create(admin_group_id):
 
     asset = {
         'data': {
-            'ns': app_ns,
-            'name': 'Vehicle management application',
-            'message': 'A vehicle management RBAC application.'
+            'ns': namespace,
+            'name': namespace,
         }
     }
 
-    return bigchaindb.get_or_create_asset(signer, app_ns, asset, metadata)
+    return bigchaindb.get_or_create_asset(signer, namespace, asset, metadata)
 
 
 def get():
