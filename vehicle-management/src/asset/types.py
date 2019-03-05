@@ -6,60 +6,61 @@ import app
 signer = get_appKeyPair()
 
 
-class Type():
-    """ Abstract type class
+class AssetType():
+    """ Abstract AssetType class
     """
 
-    def __init__(self):
-        pass
-    
-    def get_name(self):
+    @staticmethod
+    def get_name():
         """
         Asset type name. Child class implement this function
         """
         raise NotImplementedError("Need implementation.")
 
-    def get_asset_ns(self):
+    @classmethod
+    def get_asset_ns(cls):
         """
         Asset namespace.
         """
-        asset_ns = '%s.%s' % (app.app_ns, self.get_name())
+        return '%s.%s' % (app.namespace, cls.get_name())
+    
+    @classmethod
+    def get_or_create(cls, app_id, can_link):
+        """
+        Get or create an specific asset type.
+        """
+        namespace = cls.get_asset_ns()
+        metadata = {
+            'link': app_id,
+            'canLink': [can_link]
+        }
 
+        asset = {
+            'data': {
+                'ns': namespace,
+                'name': cls.get_name()
+            }
+        }
 
-class Admin():
-    """
-    Admin type asset in application.
-    All users has admin rights is linked to this Type.
-    """
-    pass
+        # Retrieve or create new asset type
+        cls.id = bigchaindb.get_or_create_asset(signer, namespace, asset, metadata)
 
+        return cls.id
 
-class Dealer():
-    """
-    Dealer type asset in application.
-    All dealers instance are linked to this Type.
-    """
-    pass
+    @classmethod
+    def get(cls, asset_id=None):
+        """
+        Get asset type group id
+        """
+        if asset_id is None:
+            asset_ns = cls.get_asset_ns()
+            asset_id = bigchaindb.search_asset(signer, asset_ns)
 
+        return bigchaindb.get(asset_id)
 
-class Owner():
-    """
-    Asset owner type in application.
-    All owners instance are linked to this Type.
-    """
-
-
-class Vehicle():
-    """
-    Vehicle type in application.
-    All vehicles instance are linked to this Type.
-    """
-    pass
-
-
-class Incident():
-    """
-    Incident type in application.
-    All incidents are linked to this Type.
-    """
-    pass
+    @classmethod
+    def load_asset_type_id(cls):
+        """
+        Load asset type id and store in cls.id
+        """
+        
