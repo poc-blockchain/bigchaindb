@@ -1,0 +1,9 @@
+pytest-runner==4.4
+cryptoconditions==0.8.0
+# BigchainDB python driver
+bigchaindb-driver==0.6.2
+flake8==3.7.7
+python-dotenv==0.10.1
+# iPython and Jupter
+jupyter
+
