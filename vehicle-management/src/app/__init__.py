@@ -1,6 +1,10 @@
 from core import bigchaindb
 from core.key_pairs import get_appKeyPair
+from core.utils import getLogger
 from config import settings
+
+# Create log instance to use across the module
+log = getLogger('app')
 
 signer = get_appKeyPair()
 namespace = '%s.%s' % (settings.APP_NAME, 'app')
@@ -13,7 +17,7 @@ def get_or_create(admin_group_id):
     """
 
     metadata = {
-        'canLink': [admin_group_id]
+        'can_link': [admin_group_id]
     }
 
     asset = {

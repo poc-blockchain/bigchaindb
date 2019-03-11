@@ -1,8 +1,9 @@
 from datetime import datetime
 from bigchaindb_driver import BigchainDB
 from bigchaindb_driver.crypto import generate_keypair
-conn = BigchainDB('https://test.bigchaindb.com')
+conn = BigchainDB('http://localhost:9984')
 namespace = 'ibpb.tranhoang'
+
 
 def createNewAsset(keypair, asset, metadata):
     tx = conn.transactions.prepare(
@@ -18,6 +19,7 @@ def createNewAsset(keypair, asset, metadata):
         private_keys=keypair.private_key
     )
     return conn.transactions.send_commit(signed_tx)
+
 
 def transferAsset(tx, fromKeyPair, toPublicKey, metadata):
 
@@ -37,7 +39,7 @@ def transferAsset(tx, fromKeyPair, toPublicKey, metadata):
         },
         'owners_before': output['public_keys'],
     }
-   
+
     prepared_transfer_tx = conn.transactions.prepare(
         operation='TRANSFER',
         asset=transfer_asset,
@@ -50,12 +52,18 @@ def transferAsset(tx, fromKeyPair, toPublicKey, metadata):
         private_keys=fromKeyPair.private_key,
     )
     sent_transfer_tx = conn.transactions.send_commit(fulfilled_transfer_tx)
-    
+
     return sent_transfer_tx
 
-# 
+
 # admin1, adminGroupId, 'admin', admin1.publicKey, adminuser1Metadata)
-def createUser(adminKeyPair, userTypeId, userTypeName, userPublicKey, userMetadata):
+def createUser(
+        adminKeyPair,
+        userTypeId,
+        userTypeName,
+        userPublicKey,
+        userMetadata,
+        can_link=None):
     asset = {
         'data': {
             'ns': '%s.%s' % (namespace, userTypeName),
@@ -75,11 +83,16 @@ def createUser(adminKeyPair, userTypeId, userTypeName, userPublicKey, userMetada
             'userType': userTypeName
         }
     }
+
+    if can_link is not None:
+        metadata['can_link'] = can_link
+
     instanceTx = createNewAsset(adminKeyPair, asset, metadata)
     transferAsset(instanceTx, adminKeyPair, userPublicKey, userMetadata)
     return instanceTx
 
-def createType(typeName, appId, canLinkAssetId):
+
+def createType(typeName, appId, can_linkAssetId):
     asset = {
         'data': {
             'ns': '%s.%s' % (namespace, typeName),
@@ -89,7 +102,7 @@ def createType(typeName, appId, canLinkAssetId):
     }
 
     metadata = {
-        'can_link': canLinkAssetId
+        'can_link': can_linkAssetId
     }
 
     return createNewAsset(admin1, asset, metadata)
@@ -117,7 +130,7 @@ adminGroupAsset = {
 }
 
 adminGroupMetadata = {
-    'canLink': [admin1.public_key]
+    'can_link': [admin1.public_key]
 }
 
 tx = createNewAsset(admin1, adminGroupAsset, adminGroupMetadata)
@@ -131,7 +144,7 @@ appAsset = {
     }
 }
 appMetadata = {
-    'canLink': adminGroupId
+    'can_link': adminGroupId
 }
 
 app = createNewAsset(admin1, appAsset, appMetadata)
@@ -152,7 +165,13 @@ adminuser1Metadata = {
     }
 }
 
-adminUserId = createUser(admin1, adminGroupId, 'admin', admin1.public_key, adminuser1Metadata).id
+adminUserId = createUser(
+    admin1,
+    adminGroupId,
+    'admin',
+    admin1.public_key,
+    adminuser1Metadata,
+    can_link=admin1.public_key)['id']
 
 
 # Tribes are user groups
@@ -170,7 +189,8 @@ user1Metadata = {
         'userType': 'tribe1'
     }
 }
-user1AssetId = createUser(admin1, tribe1Id, 'tribe1', user1.public_key, user1Metadata)['id']
+user1AssetId = createUser(
+    admin1, tribe1Id, 'tribe1', user1.public_key, user1Metadata)['id']
 
 # Add user2 to tribe2 group
 user2Metadata = {
@@ -182,10 +202,11 @@ user2Metadata = {
         'userType': 'tribe2'
     }
 }
-user2AssetId = createUser(admin1, tribe2Id, 'tribe2', user2.public_key, user2Metadata)['id']
+user2AssetId = createUser(
+    admin1, tribe2Id, 'tribe2', user2.public_key, user2Metadata)['id']
 
 
-# Add user3 to tribe1 group
+# Add user3 to tribe1 groupcd
 user3Metadata = {
     'event': 'User Assigned',
     'date': datetime.now().strftime('%Y-%m-%d'),
@@ -195,7 +216,8 @@ user3Metadata = {
         'userType': 'tribe1'
     }
 }
-user3AssetId = createUser(admin1, tribe1Id, 'tribe1', user3.public_key, user3Metadata)['id']
+user3AssetId = createUser(
+    admin1, tribe1Id, 'tribe1', user3.public_key, user3Metadata)['id']
 
 # Only tribe 1 users can create proposal
 proposalGroupId = createType('proposal', appId, tribe1Id)['id']
@@ -209,25 +231,33 @@ proposal1 = createTypeInstance(
     user1,
     'proposal',
     proposalGroupId,
-    { 'name': 'new proposal by user 1', 'timestamp': datetime.now().timestamp() })
+    {
+        'name': 'new proposal by user 1',
+        'timestamp': datetime.now().timestamp()})
 
 # create vote by user 2 - should pass
 vote1 = createTypeInstance(
     user2,
     'vote',
     voteGroupId,
-    { 'name': 'new vote by user 2', 'timestamp': datetime.now().timestamp() })
+    {
+        'name': 'new vote by user 2',
+        'timestamp': datetime.now().timestamp()})
 
 # create proposal by user 3 - should pass
 proposal2 = createTypeInstance(
     user3,
     'proposal',
     proposalGroupId,
-    { 'name': 'new proposal by user 3', 'timestamp': datetime.now().timestamp() })
+    {
+        'name': 'new proposal by user 3',
+        'timestamp': datetime.now().timestamp()})
 
 # create vote by user 1 - should fail
 vote2 = createTypeInstance(
     user1,
     'vote',
     voteGroupId,
-    { 'name': 'new vote by user 1', 'timestamp': datetime.now().timestamp() })
+    {
+        'name': 'new vote by user 1',
+        'timestamp': datetime.now().timestamp()})
