@@ -112,7 +112,7 @@ manager.test()
 
 Output
 
-``` bash
+``` console
 asset - INFO - Create a dealer
 asset - INFO - dealer user has been create in transaction 17f5af89189d2581a676df84ec228bc1cac1fb92f091f3086638329b6abea5f5
 asset - INFO - Create a police
