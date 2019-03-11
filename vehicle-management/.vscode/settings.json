@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/Users/tranhoang/.local/share/virtualenvs/vehicle-management-dMxN6chT/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true
+}
